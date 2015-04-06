@@ -75,4 +75,23 @@ class HgvsTest extends spock.lang.Specification {
         where:
         hgvs << ["NC_000016.10:g.2088677_2088679delTGAinsT", "NC_000019.9:c.14ins"]
     }
+
+
+    @Unroll
+    def "Hgvs string for #accession:#start-#stop;#reference;#alternate is #hgvsString"() {
+        when: "build hgvs"
+        def hgvs = new Hgvs(accession, type, start, stop, reference, alternate)
+
+        then:
+        hgvs.toString() == hgvsString
+
+        where:
+        accession      | type | start  | stop   | reference | alternate || hgvsString
+        "NC_000001.11" | "g"  | 374354 | 374354 | "G"       | "A"       || "NC_000001.11:g.374354G>A"
+        "NC_000014.9"  | "g"  | 481    | 482    | "-"       | "A"       || "NC_000014.9:g.481_482insA"
+        "NC_000024.10" | "g"  | 35     | 35     | "G"       | "-"       || "NC_000024.10:g.35delG"
+        "NC_000017.11" | "g"  | 46739  | 46739  | "C"       | "CC"      || "NC_000017.11:g.46739dupC"
+    }
+
+    // TODO: variant -> Hgvs -> variant test
 }

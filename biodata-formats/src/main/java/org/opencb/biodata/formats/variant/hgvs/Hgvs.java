@@ -19,14 +19,16 @@ public class Hgvs {
     private static final String STOP = "stop";
     private static final String CHANGE = "change";
 
-    public static final String HGVS = "hgvs";
+    public static final String HGVS = "HGVS";
     private static final String GENOMIC_HGVS_TYPE = "g";
 
-    private RefseqAccession accession;
+    private String accession;
     private String type;
     private int start;
     private int stop;
     private String change;
+
+    private String hgvsString;
 
     private static Pattern pattern;
 
@@ -36,11 +38,13 @@ public class Hgvs {
     }
 
     public Hgvs(String hgvs) {
+        this.hgvsString = hgvs;
+
         // parse the hgvs string
         Matcher matcher = pattern.matcher(hgvs);
         matcher.find();
 
-        this.accession = new RefseqAccession(matcher.group(Hgvs.ACCESSION));
+        this.accession = matcher.group(Hgvs.ACCESSION);
         this.type = matcher.group(Hgvs.TYPE);
         this.start = Integer.parseInt(matcher.group(Hgvs.START));
         String stopString = matcher.group(Hgvs.STOP);
@@ -53,6 +57,50 @@ public class Hgvs {
         //this.change = StringEscapeUtils.unescapeXml(matcher.group(Hgvs.CHANGE));
     }
 
+    public Hgvs(String accession, String type, int start, int stop, String reference, String alternate) {
+        this.accession = accession;
+        this.type = type;
+        this.start = start;
+        this.stop = stop;
+        this.change = getChange(reference, alternate);
+        String hgvsLocation = getHgvsLocation(start, stop);
+        this.hgvsString = accession + ":" + type + "." + hgvsLocation  + this.change;
+    }
+
+    private String getHgvsLocation(int start, int stop) {
+        if (start == stop) {
+            return Integer.toString(start);
+        } else {
+            return start + "_" + stop;
+        }
+    }
+
+    private String getChange(String reference, String alternate) {
+        String change;
+
+        if (reference.length() < alternate.length()) {
+            if (alternate.equals(reference.concat(reference))) {
+                change = "dup".concat(reference);
+            } else {
+                // TODO: could be an ins next to a del
+                change = "ins".concat(alternate.replaceFirst(reference, ""));
+            }
+        } else if (reference.length() > alternate.length()) {
+            // TODO: could be an ins next to a del
+            change = "del".concat(reference.replaceFirst(alternate, ""));
+        } else if (reference.equals("-")) {
+            // TODO: use StringBuilder instead?
+            change = "ins".concat(alternate);
+        } else if (alternate.equals("-")) {
+            // TODO: use StringBuilder instead?
+            change = "del".concat(reference);
+        } else {
+            change = reference + ">" + alternate;
+        }
+
+        return change;
+    }
+
     public Variant getVariant() throws ParseException {
         return getVariant(null);
     }
@@ -63,7 +111,7 @@ public class Hgvs {
         // check that the HGVS is genomic
         if (type.equals(GENOMIC_HGVS_TYPE)) {
             // chr, start and stop
-            String chromosome = accession.getChromosome();
+            String chromosome = getChromosome();
 
             // process change to obtain reference, alternative and shift start if needed
             if (change.contains(">")) {
@@ -82,6 +130,14 @@ public class Hgvs {
         }
 
         return variant;
+    }
+
+    private String getChromosome() {
+        if (RefseqAccession.isValidAccession(accession)) {
+            return new RefseqAccession(accession).getChromosome();
+        } else {
+            return accession;
+        }
     }
 
     private Variant getVariantFromComplexRearrangement(String chromosome, IndexedFastaSequenceFile genomeSequenceFastaFile) {
@@ -158,6 +214,15 @@ public class Hgvs {
     }
 
     public String getAssembly() {
-        return this.accession.getAssembly();
+        String assembly = "";
+        if (RefseqAccession.isValidAccession(accession)) {
+            assembly = new RefseqAccession(accession).getAssembly();
+        }
+        return assembly;
+    }
+
+    @Override
+    public String toString() {
+        return hgvsString;
     }
 }
