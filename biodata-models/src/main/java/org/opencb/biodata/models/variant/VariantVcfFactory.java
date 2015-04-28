@@ -8,10 +8,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.feature.AllelesCode;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
+import org.opencb.biodata.models.variant.exceptions.NotAVariantException;
 
 /**
  * @author Alejandro Aleman Ramos &lt;aaleman@cipf.es&gt;
  * @author Cristina Yenyxe Gonzalez Garcia &lt;cyenyxe@ebi.ac.uk&gt;
+ * @author Jose Miguel Mut Lopez &lt;jmmut@ebi.ac.uk&gt;
  */
 public class VariantVcfFactory implements VariantFactory {
 
@@ -30,10 +32,13 @@ public class VariantVcfFactory implements VariantFactory {
      * from a VCF record
      */
     @Override
-    public List<Variant> create(VariantSource source, String line) throws IllegalArgumentException {
+    public List<Variant> create(VariantSource source, String line) throws IllegalArgumentException, NotAVariantException {
         String[] fields = line.split("\t");
         if (fields.length < 8) {
             throw new IllegalArgumentException("Not enough fields provided (min 8)");
+        }
+        if(fields[4].equals(".")) {
+            throw new NotAVariantException("Alternative allele is a '.'. This is not an actual variant but a reference position.");
         }
 
         List<Variant> variants = new LinkedList<>();
@@ -43,7 +48,8 @@ public class VariantVcfFactory implements VariantFactory {
         String id = fields[2].equals(".") ? "" : fields[2];
         Set<String> ids = new HashSet<>(Arrays.asList(id.split(";")));
         String reference = fields[3].equals(".") ? "" : fields[3];
-        String alternate = fields[4].equals(".") ? "" : fields[4];
+        String alternate = fields[4];
+//        String alternate = fields[4].equals(".") ? "" : fields[4];
         String[] alternateAlleles = alternate.split(",");
         float quality = fields[5].equals(".") ? -1 : Float.parseFloat(fields[5]);
         String filter = fields[6].equals(".") ? "" : fields[6];
@@ -416,5 +422,31 @@ public class VariantVcfFactory implements VariantFactory {
         public int getNumAllele() {
             return numAllele;
         }
+    }
+
+    /**
+     * In multiallelic variants, we have a list of alternates, where numAllele is the one whose variant we are parsing now.
+     * If we are parsing the first variant (numAllele == 0) A1 refers to first alternative, (i.e. alternateAlleles[0]), A2 to 
+     * second alternative (alternateAlleles[1]), and so on.
+     * However, if numAllele == 1, A1 refers to second alternate (alternateAlleles[1]), A2 to first (alternateAlleles[0]) and higher alleles remain unchanged.
+     * Moreover, if NumAllele == 2, A1 is third alternate, A2 is first alternate and A3 is second alternate.
+     * It's also assumed that A0 would be the reference, so it remains unchanged too.
+     *
+     * This pattern of the first allele moving along (and swapping) is what describes this function. 
+     * Also, look VariantVcfFactory.getSecondaryAlternates().
+     * @param parsedAllele the value of parsed alleles. e.g. 1 if genotype was "A1" (first allele).
+     * @param numAllele current variant of the alternates.
+     * @return the correct allele index depending on numAllele.
+     */
+    protected static int mapToMultiallelicIndex (int parsedAllele, int numAllele) {
+        int correctedAllele = parsedAllele;
+        if (parsedAllele > 0) {
+            if (parsedAllele == numAllele + 1) {
+                correctedAllele = 1;
+            } else if (parsedAllele < numAllele + 1) {
+                correctedAllele = parsedAllele + 1;
+            }
+        }
+        return correctedAllele;
     }
 }
