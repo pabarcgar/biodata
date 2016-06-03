@@ -28,6 +28,7 @@ import java.util.zip.GZIPInputStream;
 public class ClinvarParser {
 
     public final static String CLINVAR_CONTEXT_v19 = "org.opencb.biodata.formats.variant.clinvar.v19jaxb";
+    public final static String CLINVAR_CONTEXT_v34 = "org.opencb.biodata.formats.variant.clinvar.v34jaxb";
 
     public static void saveXMLInfo(Object obj, String filename) throws FileNotFoundException, JAXBException {
         JAXBContext jaxbContext;
