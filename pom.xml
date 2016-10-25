@@ -34,7 +34,7 @@
     </modules>
 
     <properties>
-        <biodata.version>0.5.0b</biodata.version>
+        <biodata.version>0.5.0c</biodata.version>
         <compileSource>1.8</compileSource>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
