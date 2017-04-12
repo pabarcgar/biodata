@@ -4,7 +4,7 @@
 
     <groupId>uk.ac.ebi.eva</groupId>
     <artifactId>biodata</artifactId>
-    <version>0.4.7-SNAPSHOT</version>
+    <version>0.4.7</version>
     <packaging>pom</packaging>
 
     <name>Biodata</name>
