@@ -227,13 +227,11 @@
     </build>
     <distributionManagement>
         <snapshotRepository>
-            <id>snapshots</id>
-            <name>oss-jfrog-artifactory-snapshots</name>
+            <id>eva-snapshots</id>
             <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
         </snapshotRepository>
         <repository>
-            <id>releases</id>
-            <name>oss-jfrog-artifactory-releases</name>
+            <id>eva-releases</id>
             <url>https://oss.jfrog.org/artifactory/oss-release-local</url>
         </repository>
     </distributionManagement>
