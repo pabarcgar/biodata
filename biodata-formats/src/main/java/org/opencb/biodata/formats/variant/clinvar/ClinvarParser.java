@@ -34,6 +34,7 @@ public class ClinvarParser {
     public final static String CLINVAR_CONTEXT_v37 = "org.opencb.biodata.formats.variant.clinvar.v37jaxb";
     public final static String CLINVAR_CONTEXT_v39 = "org.opencb.biodata.formats.variant.clinvar.v39jaxb";
     public final static String CLINVAR_CONTEXT_v43 = "org.opencb.biodata.formats.variant.clinvar.v43jaxb";
+    public final static String CLINVAR_CONTEXT_v47 = "org.opencb.biodata.formats.variant.clinvar.v47jaxb";
 
     public static void saveXMLInfo(Object obj, String filename) throws FileNotFoundException, JAXBException {
         JAXBContext jaxbContext;

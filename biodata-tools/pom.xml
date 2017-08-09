@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.opencb.biodata</groupId>
         <artifactId>biodata</artifactId>
-        <version>0.5.0e</version>
+        <version>0.5.0f</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
